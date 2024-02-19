@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Chat App avec Rooms</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        #loginContainer {
+            text-align: center;
+            padding: 30px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(145deg, #232323, #191919);
+            box-shadow: 5px 5px 15px #0a0a0a, -5px -5px 15px #2a2a2a;
+        }
+
+        #avatarSelection {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        #avatarSelection img {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 2px 2px 6px #0a0a0a, -2px -2px 6px #2a2a2a;
+            transition: transform 0.2s;
+        }
+
+        #avatarSelection img:hover {
+            transform: scale(1.1);
+        }
+
+        #customAvatarInput {
+            display: none;
+        }
+
+        #customAvatarLabel {
+            background-color: #ff0000;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #customAvatarLabel:hover {
+            background-color: #e60000;
+        }
+
+        #usernameInput {
+            width: calc(100% - 20px);
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #262626;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            box-shadow: inset 2px 2px 4px #0a0a0a, inset -2px -2px 4px #2a2a2a;
+        }
+
+        #loginButton {
+            padding: 10px 20px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 2px 2px 6px #0a0a0a;
+        }
+
+        #loginButton:hover {
+            background-color: #e60000;
+        }
+
+        #avatarContainer {
+            display: flex;
+            align-items: center;
+        }
+
+        #selectedAvatar {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            border-radius: 50%;
+            box-shadow: 2px 2px 6px #0a0a0a, -2px -2px 6px #2a2a2a;
+        }
+
+
+        #appTitle {
+            font-size: 40px;
+            color: #ff0000;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 2px 2px 4px #000;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div id="loginContainer">
+        <h1 id="appTitle">Chat App</h1>
+        <h2>Welcome to the Chat App!</h2>
+
+        <div id="avatarContainer">
+            <img id="selectedAvatar" src="" alt="Selected Avatar">
+            <div id="avatarSelection"></div>
+            <input type="file" id="customAvatarInput" accept=".png, .jpg, .jpeg" onchange="selectCustomAvatar()">
+            <label for="customAvatarInput" id="customAvatarLabel">Select Custom Avatar</label>
+        </div>
+
+        <input type="text" id="usernameInput" placeholder="Enter your username">
+        <button id="loginButton" onclick="login()">Login</button>
+    </div>
+
+    <script>
+        var avatars = [
+            { url: "./avatars/1.png" },
+            { url: "./avatars/2.png" },
+            { url: "./avatars/3.png" },
+            { url: "./avatars/4.png" },
+            { url: "./avatars/5.png" },
+            { url: "./avatars/6.png" },
+            { url: "./avatars/7.png" },
+            { url: "./avatars/8.png" },
+            { url: "./avatars/9.png" }
+        ];
+    
+        var avatarSelection = document.getElementById('avatarSelection');
+        var defaultAvatar = "./avatars/1.png";
+    
+        avatars.forEach((avatar, index) => {
+            var img = document.createElement('img');
+            img.src = avatar.url;
+            img.alt = 'Avatar ' + (index + 1);
+            img.onclick = function () {
+                selectAvatar(avatar.url);
+            };
+            avatarSelection.appendChild(img);
+        });
+    
+        document.getElementById('selectedAvatar').src = defaultAvatar;
+    
+        function selectCustomAvatar() {
+            var input = document.getElementById('customAvatarInput');
+    
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+    
+                reader.onload = function (e) {
+                    selectAvatar(e.target.result);
+                };
+    
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    
+        function selectAvatar(avatar) {
+            document.getElementById('selectedAvatar').src = avatar;
+        }
+    
+        function handleKeyUp(event) {
+            if (event.keyCode === 13) {
+                login();
+            }
+        }
+    
+        document.getElementById('usernameInput').addEventListener('keyup', handleKeyUp);
+    
+        function login() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (username) {
+                const avatar = document.getElementById('selectedAvatar').src || defaultAvatar;
+                localStorage.setItem('currentUser', JSON.stringify({ username, avatar }));
+                window.location.href = 'index.html';
+            } else {
+                alert('Please enter a username.');
+            }
+        }
+    </script>
+    
+</body>
+
+</html>

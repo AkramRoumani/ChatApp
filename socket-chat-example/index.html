@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chat App avec Rooms</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        #header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #userAvatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #ff0000;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        #usernameDisplay {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+
+        #chatContainer {
+            display: flex;
+            flex-grow: 1;
+        }
+
+        #sidebar {
+            width: 200px;
+            background: #1e1e1e;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: -3px 0 5px rgba(0, 0, 0, 0.5);
+            color: #fff;
+        }
+
+        #sidebar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #ff0000;
+            text-transform: uppercase;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 10px;
+        }
+
+        #roomList li,
+        #onlineUsers li {
+            cursor: pointer;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            color: #fff;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        #roomList li:hover,
+        #onlineUsers li:hover {
+            background-color: #252525;
+            transform: scale(1.03);
+        }
+
+        #roomList li::before,
+        #onlineUsers li::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ff0000;
+            margin-right: 10px;
+        }
+
+        .chatArea {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            width: calc(100% - 200px);
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #messages li {
+            max-width: 70%;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #fff;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .sent {
+            align-self: flex-end;
+            background-color: #007bff;
+            border-bottom-right-radius: 0;
+            margin-left: auto;
+        }
+
+        .received {
+            align-self: flex-start;
+            background-color: #333;
+            border-bottom-left-radius: 0;
+        }
+
+        .messageInputArea {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #1e1e1e;
+        }
+
+        #chatInput {
+            flex-grow: 1;
+            margin-right: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #262626;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #userSelect {
+            margin-right: 10px;
+            background-color: #262626;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #typingIndicator {
+            color: #888;
+            margin-top: 10px;
+        }
+
+        #createRoomButton {
+            padding: 10px 20px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #createRoomButton:hover {
+            background-color: #e60000;
+        }
+
+        #newRoomInput {
+            padding: 10px;
+            margin-right: 10px;
+            box-sizing: border-box;
+            background-color: #262626;
+            color: #fff;
+            border: 1px solid #ff0000;
+            border-radius: 5px;
+            width: calc(100% - 20px);
+        }
+
+        #chatHeader {
+            padding: 10px;
+            background-color: #0f0d0d; 
+            border-bottom: 1px solid #333; 
+            text-align: center; 
+        }
+
+        #currentRoomDisplay {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff; 
+        }
+    </style>
+
+
+
+</head>
+
+<body>
+    <div id="header">
+        <img id="userAvatar" src="" alt="User Avatar">
+        <span id="usernameDisplay"></span>
+    </div>
+
+    <div id="chatContainer">
+        <div id="sidebar">
+            <h3>Rooms</h3>
+            <ul id="roomList">
+            </ul>
+            <input type="text" id="newRoomName" placeholder="New Room">
+            <button onclick="createRoom()">Create Room</button>
+            <h3>Online</h3>
+            <ul id="onlineUsers">
+            </ul>
+        </div>
+
+        <div class="chatArea">
+
+            <div id="chatHeader">
+                <span id="currentRoomDisplay">General</span>
+            </div>
+
+            <ul id="messages">
+            </ul>
+            <div class="messageInputArea">
+                <select id="userSelect">
+                    <option value="">Public</option>
+                </select>
+                <input type="text" id="chatInput" placeholder="Type your message here..." oninput="isTyping()"
+                    onblur="stopTyping()">
+                <div id="typingIndicator"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentUserInfo;
+        let messagesByRoom = {};
+        let currentRoom = 'Général';
+
+        function setupUserHeader() {
+            currentUserInfo = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUserInfo) {
+                document.getElementById('userAvatar').src = currentUserInfo.avatar;
+                document.getElementById('usernameDisplay').textContent = "Connected as " + currentUserInfo.username;
+                socket.emit('setNickname', currentUserInfo.username, currentUserInfo.avatar);
+                joinRoom('Général');
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        socket.on('connect', setupUserHeader);
+
+        socket.on('roomList', (updatedRoomList) => {
+            const roomListElement = document.getElementById('roomList');
+            roomListElement.innerHTML = '';
+            updatedRoomList.forEach((room) => {
+                const li = document.createElement('li');
+                li.textContent = room;
+                li.onclick = () => joinRoom(room);
+                roomListElement.appendChild(li);
+            });
+        });
+
+        socket.on('onlineUsers', (users) => {
+            const onlineUsersElement = document.getElementById('onlineUsers');
+            const userSelect = document.getElementById('userSelect');
+            onlineUsersElement.innerHTML = '';
+            userSelect.innerHTML = '<option value="">Public</option>';
+
+            users.forEach((user) => {
+                if (user.nickname !== currentUserInfo.username) {
+                    const li = document.createElement('li');
+                    const img = document.createElement('img');
+                    img.src = user.avatarUrl;
+                    img.classList.add('avatar');
+                    li.appendChild(img);
+                    li.appendChild(document.createTextNode(user.nickname));
+                    onlineUsersElement.appendChild(li);
+
+                    const option = document.createElement('option');
+                    option.value = user.nickname;
+                    option.textContent = user.nickname;
+                    userSelect.appendChild(option);
+                }
+            });
+        });
+
+        function joinRoom(roomName) {
+            currentRoom = roomName;
+            document.getElementById('currentRoomDisplay').textContent = roomName; 
+            socket.emit('joinRoom', roomName);
+            document.getElementById('messages').innerHTML = '';
+
+            if (messagesByRoom[roomName]) {
+                messagesByRoom[roomName].forEach(msg => {
+                    addMessageToChat(msg.nickname, msg.text, msg.avatar);
+                });
+            }
+        }
+
+
+        function createRoom() {
+            const roomName = document.getElementById('newRoomName').value.trim();
+            if (roomName) {
+                socket.emit('createRoom', roomName);
+                document.getElementById('newRoomName').value = '';
+                joinRoom(roomName);
+            }
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('chatInput').value;
+            const toUser = document.getElementById('userSelect').value;
+            if (message) {
+                if (toUser) {
+                    socket.emit('privateMessage', message, toUser);
+                    addMessageToChat(`Private to ${toUser}`, message, currentUserInfo.avatar);
+                } else {
+                    socket.emit('chatMessage', message);
+                    addMessageToChat('You', message, currentUserInfo.avatar);
+                }
+                document.getElementById('chatInput').value = '';
+            }
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                sendMessage();
+                e.preventDefault();
+            }
+        });
+
+        function isTyping() {
+            socket.emit('typing');
+        }
+
+        function stopTyping() {
+            socket.emit('stopTyping');
+        }
+
+        function addMessageToChat(nickname, message, avatar = null) {
+            const item = document.createElement('li');
+            item.classList.add(nickname === 'You' || nickname === currentUserInfo.username ? 'sent' : 'received');
+
+            if (avatar) {
+                const img = document.createElement('img');
+                img.src = avatar;
+                img.classList.add('avatar');
+                item.appendChild(img);
+            }
+
+
+            let messageText = '';
+            if (nickname && nickname !== 'undefined') {
+                messageText = nickname === currentUserInfo.username ? `You: ${message}` : `${nickname}: ${message}`;
+            } else {
+                messageText = message;
+            }
+
+            const textNode = document.createTextNode(messageText);
+            item.appendChild(textNode);
+
+            document.getElementById('messages').appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+
+        socket.on('chatMessage', (data) => {
+            addMessageToChat(data.nickname, data.text || '', data.avatarUrl);
+        });
+
+        socket.on('privateMessage', (data) => {
+            addMessageToChat(`Private from ${data.from}`, data.message || '', data.avatarUrl);
+        });
+
+        socket.on('typing', (nickname) => {
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.textContent = `${nickname} is typing...`;
+        });
+
+        socket.on('stopTyping', () => {
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.textContent = '';
+        });
+    </script>
+
+</body>
+
+</html>
